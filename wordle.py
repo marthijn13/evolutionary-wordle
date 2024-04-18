@@ -1,23 +1,14 @@
 import random
-import numpy as np
 
 class Wordle: 
-    words = []
     def __init__(self):
-        self.words = []
-        self.word = ''
         self.nGuess = 0
-        self.loadWordlist()
-    
-    def __str__(self):
-        return f'Goal: {self.word}, guesses: {self.nGuess}'
-
-    def loadWordlist(self):
         with open("wordlist.txt", "r") as f:
             self.words = f.read().splitlines()
-
-    def play(self):
-        self.word = self.words[random.randrange(0, len(self.words))]
+        self.target = self.words[random.randrange(0, len(self.words))]
+    
+    def __str__(self):
+        return f'Goal: {self.target}, guesses: {self.nGuess}'
         
     def guessWord(self, guess):
         if self.nGuess > 6: 
@@ -27,10 +18,10 @@ class Wordle:
         results = []
         occurrences = letter_occurrence(guess)
         for i in range(len(guess)):
-            if guess[i] == self.word[i]:
+            if guess[i] == self.target[i]:
                 results.append(2)
-            elif guess[i] in self.word:
-                count = self.word.count(guess[i])
+            elif guess[i] in self.target:
+                count = self.target.count(guess[i])
                 if count >= occurrences[i]:
                     results.append(1)
                 else:
@@ -41,10 +32,10 @@ class Wordle:
         return results
         
 
-def letter_occurrence(word):
+def letter_occurrence(guess):
     occurrences = []
     seen = {}
-    for letter in word:
+    for letter in guess:
         if letter in seen:
             seen[letter] += 1
         else:
@@ -53,6 +44,5 @@ def letter_occurrence(word):
     return occurrences
 
 wordle = Wordle()
-wordle.play()
 print(wordle.guessWord("xtxtt"))
 print(wordle)
