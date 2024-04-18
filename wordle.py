@@ -53,12 +53,3 @@ def letter_occurrence(guess):
             seen[letter] = 1
         occurrences.append(seen[letter])
     return occurrences
-
-wordle = Wordle()
-print(wordle.guessWord("abdce"))
-print(wordle.guessWord("tapon"))
-print(wordle.guessWord("facet"))
-print(wordle.guessWord("taboo"))
-print(wordle.guessWord("trade"))
-
-print(wordle)
