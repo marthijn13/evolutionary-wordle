@@ -9,9 +9,11 @@ class Individual:
         self.distribution = [random.random() for _ in range(26)]
         self.fitness = 0
         self.env = wordle.Wordle()
-    def set_fitness(self, fitness):
-        self.fitness = fitness
 
+    def construct_guess(self, information = []): # TODO: implement different strategies using inheritance
+        indices = np.arange(1, len(self.distribution)+1)
+        samples = random.choices(indices, weights=self.distribution, k=5)
+        return ''.join([chr(s + 96) for s in samples])
 
 class Evolution: 
     def __init__(self):
@@ -19,16 +21,10 @@ class Evolution:
         for _ in range(POPULATION_SIZE):
             self.population.append(Individual())
 
-
-    def construct_guess(self, distribution):
-        indices = np.arange(1, len(distribution)+1)
-        samples = random.choices(indices, weights=distribution, k=5)
-        return ''.join([chr(s + 96) for s in samples])
-
     def run_generation(self):
         for p in self.population:
             for _ in range(6):
-                fitness = p.env.guessWord(self.construct_guess(p.distribution))
+                fitness = p.env.guessWord(p.construct_guess())
                 if np.sum(fitness) > 9:
                     print(p.env)
             # TODO: change fitness after implementing guesses based on any information instead of random guessing
@@ -47,3 +43,4 @@ class Evolution:
 env = Evolution()
 fitness, guesses, distribution = env.run_generation()
 print(guesses)
+print(distribution)
