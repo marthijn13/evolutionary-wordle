@@ -40,7 +40,7 @@ class Wordle:
             else:
                 result.append(0)
         self.results.append(result)
-        return result
+        return result, guess
         
 
 def letter_occurrence(guess):
