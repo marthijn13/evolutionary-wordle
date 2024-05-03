@@ -1,6 +1,7 @@
 import random
 import numpy as np
 import wordle
+import pandas as pd
 
 POPULATION_SIZE = 20
 MUTATION_RATE = 0.2
@@ -54,8 +55,8 @@ class Evolution:
         best_guesses = []
         best_distribution = []
         for p in self.population:
-            if np.sum(p.fitness) > best_fitness:
-                best_fitness = np.sum(p.fitness)
+            if np.sum(p.fitness) > np.sum(best_fitness):
+                best_fitness = p.fitness
                 best_guesses = p.env
                 best_distribution = p.distribution
         return best_fitness, best_guesses, best_distribution
@@ -103,11 +104,12 @@ class Algorithm:
         self.fitnesses = []
         self.guessesList = []
         self.distributions = []
+        self.output = pd.DataFrame(columns = ['generation', 'fitness', 'distribution'])
 
     def run(self):
         for g in range(self.nGenerations):
             fitness, guesses, distribution = self.generation.run_generation()
-            self.fitnesses.append(fitness)
+            self.fitnesses.append(np.sum(fitness))
             self.guessesList.append(guesses)
             self.distributions.append(distribution)
 
@@ -115,8 +117,9 @@ class Algorithm:
                 print(g)
                 print(guesses)
             self.generation.mutate()
-
+            self.output = self.output._append({'generation': g, 'fitness': fitness, 'distribution': distribution}, ignore_index=True)
         print(self.fitnesses)
+        self.output.to_csv('csv/output.csv', index=False)
 
 alg = Algorithm()
 alg.run()
