@@ -6,6 +6,7 @@ class Wordle:
         with open("wordlist.txt", "r") as f:
             self.words = f.read().splitlines()
         self.target = self.words[random.randrange(0, len(self.words))]
+        self.target = 'motor' # TODO: Remove after testing
     
     def __str__(self):
         string = ""
