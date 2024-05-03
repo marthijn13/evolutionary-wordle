@@ -3,6 +3,8 @@ import numpy as np
 import wordle
 
 POPULATION_SIZE = 20
+MUTATION_RATE = 0.2
+CROSSOVER_RATE = 0.5
 
 class Individual:
     def __init__(self):
@@ -42,8 +44,8 @@ class Evolution:
                 fitness, guess = p.env.guessWord(p.construct_guess(prevGuess, prevGuessResults))
                 prevGuessResults = fitness
                 prevGuess = guess
-                if np.sum(fitness) > 9:
-                    print(p.env)
+                #if np.sum(fitness) > 9:
+                #    print(p.env)
             # TODO: change fitness after implementing guesses based on any information instead of random guessing
             p.fitness = (p.env.results[-1]) 
 
@@ -60,10 +62,39 @@ class Evolution:
     
     #TODO actually mutate the distributions
     def mutate(self):
-        self.population = []
-        for _ in range(POPULATION_SIZE):
-            self.population.append(Individual())
+        parents = sorted(self.population, key=lambda x: x.fitness, reverse=True)[:int(POPULATION_SIZE/2)]
         
+        children = []
+        for p in parents:
+            kid1 = Individual()
+            kid2 = Individual()
+
+            # cross-over
+            kid1.distribution, kid2.distribution = self.crossover(p.distribution, parents[random.randint(0, len(parents)-1)].distribution)
+            
+            # bit mutation
+            kid1.distribution = self.add_variation(kid1.distribution)
+            kid2.distribution = self.add_variation(kid2.distribution)
+            children.extend([kid1, kid2])
+        
+        self.population = children[:POPULATION_SIZE]
+
+    def add_variation(self, distribution):
+        bits_to_switch = int(len(distribution) * MUTATION_RATE)
+
+        for _ in range(bits_to_switch):
+            index = random.randint(0, len(distribution)-1)
+            distribution[index] = max(0, min(1, distribution[index] + random.uniform(-0.5,0.5)))
+        return distribution
+    
+    def crossover(self, dist1, dist2):
+        if random.random() < CROSSOVER_RATE:
+            crossover_index = random.randint(0, len(dist1)-1)
+            new_dist1 = dist1.copy()
+            new_dist2 = dist2.copy()
+            new_dist1[crossover_index:], new_dist2[:crossover_index] = new_dist2[crossover_index:], new_dist1[:crossover_index]
+            return new_dist1, new_dist2
+        return dist1, dist2
 
 class Algorithm:
     def __init__(self):
@@ -81,6 +112,7 @@ class Algorithm:
             self.distributions.append(distribution)
 
             if np.sum(fitness) > 9:
+                print(g)
                 print(guesses)
             self.generation.mutate()
 
