@@ -9,14 +9,16 @@ CROSSOVER_RATE = 0.5
 
 class Individual:
     def __init__(self):
-        self.distribution = [random.random() for _ in range(26)]
+        self.distribution = [[random.random() for _ in range(26)] for _ in range(5)]
         self.fitness = 0
         self.env = wordle.Wordle()
 
     def construct_guess(self, prevGuess, prevGuessResults): # TODO: implement different strategies using inheritance
         #TODO check which letters were correct and leave those
-        indices = np.arange(1, len(self.distribution)+1)
-        samples = random.choices(indices, weights=self.distribution, k=5)
+        samples = []
+        for i in range(5):
+            indices = np.arange(1, len(self.distribution[i])+1)
+            samples.append(random.choices(indices, weights=self.distribution[i], k=1)[0])
 
         if len(prevGuessResults) == 0:       
             return ''.join([chr(s + 96) for s in samples])
@@ -81,11 +83,13 @@ class Evolution:
         self.population = children[:POPULATION_SIZE]
 
     def add_variation(self, distribution):
-        bits_to_switch = int(len(distribution) * MUTATION_RATE)
+        # total places = 26 * 5 (letters * positions)
+        bits_to_switch = int(len(distribution)*len(distribution[0]) * MUTATION_RATE)
 
         for _ in range(bits_to_switch):
+            square = random.randint(0,4)
             index = random.randint(0, len(distribution)-1)
-            distribution[index] = max(0, min(1, distribution[index] + random.uniform(-0.5,0.5)))
+            distribution[square][index] = max(0, min(1, distribution[square][index] + random.uniform(-0.5,0.5)))
         return distribution
     
     def crossover(self, dist1, dist2):
