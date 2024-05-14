@@ -1,13 +1,17 @@
 import random
 import numpy as np
-     
+
+POSITIONS = 5
+LETTERS = 26
 class Wordle: 
     def __init__(self):
-        self.white = {chr(i): True for i in range(ord('a'), ord('z')+1)}
-        self.gray = {chr(i): False for i in range(ord('a'), ord('z')+1)}
-        self.green = {chr(i): [] for i in range(ord('a'), ord('z')+1)}
-        self.yellow = {chr(i): [] for i in range(ord('a'), ord('z')+1)}        
+        self.green  = np.zeros((POSITIONS, LETTERS))
+        self.yellow = np.zeros((POSITIONS, LETTERS))
+        self.white  = np.ones((POSITIONS, LETTERS))
+        self.gray   = np.zeros((POSITIONS, LETTERS))
         
+        
+
         self.results = []
 
         with open("wordlist.txt", "r") as f:
@@ -28,8 +32,7 @@ class Wordle:
             string = string + "\n"
         return f'Goal: {self.target}\n{string}'
         
-    def guessWord(self, guess):
-               
+    def guessWord(self, guess):       
         if len(self.results) > 6: 
             print("Game is already finished.")
             return None
@@ -37,37 +40,29 @@ class Wordle:
         result = []
         occurrences = letter_occurrence(guess)
         for i in range(len(guess)):
-            self.white[guess[i]] = False
+            self.white[i][char2int(guess[i])] = 0
             if guess[i] == self.target[i]:
-                self.green = add_to_dict(self.green, guess[i], i)
+                self.green[i][char2int(guess[i])] = 1
                 result.append(2)
             elif guess[i] in self.target:
                 # TODO: deze implementatie betekent dat de interne representatie naar de agent geel krijgt ongeacht de hoeveelste gele hij is. Dit is een
                 # hele handige denk ik - maar vult een stukje nodige redenatie in. Het betekent ook dat het aantal intern geel niet impliceert dat er meerdere 
                 #zijn als er later een groene gevonden wordt
-                self.yellow = add_to_dict(self.yellow, guess[i], i) 
+                self.yellow[i][char2int(guess[i])] = 1
                 count = self.target.count(guess[i])
                 if count >= occurrences[i]:
                     result.append(1)
                 else:
                     result.append(0)
             else:
-                self.gray[guess[i]] = True
+                self.gray[i][char2int(guess[i])] = 1 #TODO: implementation could be that we do this instantly for the entire grid but i would prefer not to to make it more 'human'
                 result.append(0)
         self.results.append(result)
         return result, guess
         
 
-def add_to_dict(dict, char, loc):
-    if dict[char]:
-        dict[char].append(loc)
-    else:
-        if loc in dict[char]:
-            return dict
-        else:
-            dict[char].append(loc)
-    return dict
-
+def char2int(char):
+    return ord(char) - ord('a')
 
 def letter_occurrence(guess):
     occurrences = []
