@@ -2,10 +2,11 @@ import random
 import numpy as np
 import wordle
 import pandas as pd
+import matplotlib.pyplot as plt
 
-POPULATION_SIZE = 40
+POPULATION_SIZE = 100
 MUTATION_RATE = 0.2
-CROSSOVER_RATE = 0.5
+CROSSOVER_RATE = 0.2
 
 LETTERS = 26  # a - z
 POSITIONS = 5 # 1 - 5
@@ -73,37 +74,39 @@ class Evolution:
         best_fitness = 0
         best_guesses = []
         best_distribution = []
+        weights = 0
         for p in self.population:
             if np.sum(p.fitness) > np.sum(best_fitness):
                 best_fitness = p.fitness
                 best_guesses = p.env
                 best_distribution = p.initial
-        return best_fitness, best_guesses, best_distribution
+                weights = p.weights
+        return best_fitness, best_guesses, best_distribution, weights
     
-    #TODO actually mutate the distributions
     def mutate(self):
-        parents = sorted(self.population, key=lambda x: x.fitness, reverse=True)[:int(POPULATION_SIZE/2)]
+        parents = sorted(self.population, key=lambda x: x.fitness, reverse=True)[:int(POPULATION_SIZE/8)]
         
         children = []
-        for p in parents:
-            kid1 = Individual()
-            kid2 = Individual()
-            spouse = parents[random.randint(0, len(parents)-1)]
-        
-            # cross-over
-            kid1.initial, kid2.initial = self.crossover_init(p.initial, spouse.initial)
-            kid1.weights, kid2.weights = self.crossover_init(p.weights, spouse.weights)
+        for _ in range(4):
+            for p in parents:
+                kid1 = Individual()
+                kid2 = Individual()
+                spouse = parents[random.randint(0, len(parents)-1)]
+            
+                # cross-over
+                kid1.initial, kid2.initial = self.crossover_init(p.initial, spouse.initial)
+                kid1.weights, kid2.weights = self.crossover_init(p.weights, spouse.weights)
 
-            # bit mutation
-            kid1.initial = self.add_variation_init(kid1.initial)
-            kid2.initial = self.add_variation_init(kid2.initial)
-            for l in range(LAYERS):
-                for p in range(POSITIONS):
-                    for c in range(LETTERS):
-                        kid1.weights[l][p][c] = self.add_variation_init(kid1.weights[l][p][c])
-                        kid2.weights[l][p][c] = self.add_variation_init(kid2.weights[l][p][c])
+                # bit mutation
+                kid1.initial = self.add_variation_init(kid1.initial)
+                kid2.initial = self.add_variation_init(kid2.initial)
+                for l in range(LAYERS):
+                    for p in range(POSITIONS):
+                        for c in range(LETTERS):
+                            kid1.weights[l][p][c] = self.add_variation_init(kid1.weights[l][p][c])
+                            kid2.weights[l][p][c] = self.add_variation_init(kid2.weights[l][p][c])
 
-            children.extend([kid1, kid2])
+                children.extend([kid1, kid2])
        
         self.population = children[:POPULATION_SIZE]
 
@@ -128,31 +131,47 @@ class Evolution:
 
 class Algorithm:
     def __init__(self):
-        self.nGenerations = 100
+        self.nGenerations = 20
         self.generation = Evolution()
         self.fitnesses = []
-        self.guessesList = []
-        self.distributions = []
-        self.output = pd.DataFrame(columns = ['generation', 'fitness', 'distribution'])
+        self.initial_distributions = []
+        self.weights = []
+        self.spots = []
 
     def run(self):
         for g in range(self.nGenerations):
-            fitness, guesses, distribution = self.generation.run_generation()
-            self.fitnesses.append(np.sum(fitness))
-            self.guessesList.append(guesses)
-            self.distributions.append(distribution)
-
-            if np.sum(fitness) > 9:
+            print("gen",g)
+            fitness_score, visual_rep, initial_dis, weights  = self.generation.run_generation()
+            self.fitnesses.append(np.sum(fitness_score))
+            self.initial_distributions.append(initial_dis)
+            self.weights.append(weights)
+            if np.sum(fitness_score) > 9:
                 print(g)
-                print(guesses)
+                print(visual_rep)
             self.generation.mutate()
-            self.output = self.output._append({'generation': g, 'fitness': fitness, 'distribution': distribution}, ignore_index=True)
         print(self.fitnesses)
-        self.output.to_csv('csv/output.csv', index=False)
+    
+    def initial_analysis(self):
+        # Plot the initial weights of letters a-z for generation 0, 5, 10, 15, 19
+        indexes = [0, 4, 9, 14, 19]
+        fig, ax = plt.subplots(len(indexes), 1, figsize=(10, 8))
 
+        for idx, generation_idx in enumerate(indexes):
+            heatmap = ax[idx].imshow(self.initial_distributions[generation_idx], cmap='viridis', aspect='auto')
+            ax[idx].set_title(f'Generation {generation_idx}')
+            ax[idx].set_xticks(np.arange(0, LETTERS, 1))
+            ax[idx].set_yticks(np.arange(0, POSITIONS, 1))
+            ax[idx].set_xticklabels([chr(ord("a") + i) for i in range(LETTERS)])
+            ax[idx].set_yticklabels(range(1, POSITIONS + 1))
+            plt.colorbar(heatmap, ax=ax[idx], orientation='vertical')
+
+        plt.tight_layout()
+        plt.show()
+
+      
 alg = Algorithm()
 alg.run()
-
+alg.initial_analysis()
 
 #env = Evolution()
 #fitness, guesses, distribution = env.run_generation()
