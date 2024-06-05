@@ -23,16 +23,23 @@ class Wordle:
         string = ""
         for result in self.results:
             for block in result:
-                if block == 2:
+                if block == 5:
                     string = string + "\U0001f7e9"
-                elif block == 1:
+                elif block == 3:
                     string = string + "\U0001F7E8"
                 else:
                     string = string + "\U00002B1C"
             string = string + "\n"
         return f'Goal: {self.target}\n{string}'
         
-    def guessWord(self, guess):       
+    def guessWord(self, guess):    
+        """
+        params
+        guess (string): 5 letter guess
+
+        returns
+        result (int[]): array of score per letter
+        """   
         if len(self.results) > 6: 
             print("Game is already finished.")
             return None
@@ -43,7 +50,7 @@ class Wordle:
             self.white[i][char2int(guess[i])] = 0
             if guess[i] == self.target[i]:
                 self.green[i][char2int(guess[i])] = 1
-                result.append(2)
+                result.append(5)
             elif guess[i] in self.target:
                 # TODO: deze implementatie betekent dat de interne representatie naar de agent geel krijgt ongeacht de hoeveelste gele hij is. Dit is een
                 # hele handige denk ik - maar vult een stukje nodige redenatie in. Het betekent ook dat het aantal intern geel niet impliceert dat er meerdere 
@@ -51,7 +58,7 @@ class Wordle:
                 self.yellow[i][char2int(guess[i])] = 1
                 count = self.target.count(guess[i])
                 if count >= occurrences[i]:
-                    result.append(1)
+                    result.append(3)
                 else:
                     result.append(0)
             else:
