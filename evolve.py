@@ -5,8 +5,10 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 POPULATION_SIZE = 100
-MUTATION_RATE = 0.2
+MUTATION_RATE = 0.5
 CROSSOVER_RATE = 0.2
+GENERATIONS = 20
+
 
 LETTERS = 26  # a - z
 POSITIONS = 5 # 1 - 5
@@ -15,13 +17,14 @@ LAYERS = 4    # white, grey, green, yellow
 class Individual:
     def __init__(self):
         self.initial = np.random.rand(POSITIONS, LETTERS) # random 26 x 5 matrix - for breeding purposes
-        self.weights = np.random.rand(LAYERS, POSITIONS, LETTERS, POSITIONS, LETTERS) # random 26 x 5 x 26 x 5 matrix
+        self.weights = [[[[[random.uniform(-.5, .5) for _ in range(LETTERS)] for _ in range(POSITIONS)] for _ in range(LETTERS)] for _ in range(POSITIONS)] for _ in range(LAYERS)]
+        self.weights = np.array(self.weights)
+        #self.weights = np.random.rand(LAYERS, POSITIONS, LETTERS, POSITIONS, LETTERS) # random 26 x 5 x 26 x 5 matrix
         
         self.fitness = 0
         self.env = wordle.Wordle()
 
-    def construct_guess(self, prevGuess, prevGuessResults): # TODO: implement different strategies using inheritance
-        #TODO check which letters were correct and leave those
+    def construct_guess(self, prevGuess, prevGuessResults):
         samples = []
         dis = self.new_distribution()
         for i in range(POSITIONS):
@@ -98,8 +101,8 @@ class Evolution:
                 spouse = parents[random.randint(0, len(parents)-1)]
             
                 # cross-over
-                kid1.initial, kid2.initial = self.crossover_init(p.initial, spouse.initial)
-                kid1.weights, kid2.weights = self.crossover_init(p.weights, spouse.weights)
+                kid1.initial, kid2.initial = self.crossover(p.initial, spouse.initial)
+                kid1.weights, kid2.weights = self.crossover(p.weights, spouse.weights)
 
                 # bit mutation
                 kid1.initial = self.add_variation_init(kid1.initial)
@@ -107,8 +110,8 @@ class Evolution:
                 for l in range(LAYERS):
                     for p in range(POSITIONS):
                         for c in range(LETTERS):
-                            kid1.weights[l][p][c] = self.add_variation_init(kid1.weights[l][p][c])
-                            kid2.weights[l][p][c] = self.add_variation_init(kid2.weights[l][p][c])
+                            kid1.weights[l][p][c] = self.add_variation_weights(kid1.weights[l][p][c])
+                            kid2.weights[l][p][c] = self.add_variation_weights(kid2.weights[l][p][c])
 
                 children.extend([kid1, kid2])
        
@@ -121,10 +124,20 @@ class Evolution:
         for _ in range(bits_to_switch):
             square = random.randint(0,4)
             index = random.randint(0, len(distribution)-1)
-            distribution[square][index] = max(0, min(1, distribution[square][index] + random.uniform(-0.5,0.5)))
+            distribution[square][index] = max(0, min(1, distribution[square][index] + random.uniform(-0.2,0.2)))
         return distribution
     
-    def crossover_init(self, dist1, dist2):
+    def add_variation_weights(self, distribution):
+        # total places = 26 * 5 (letters * positions)
+        bits_to_switch = int(len(distribution)*len(distribution[0]) * MUTATION_RATE)
+
+        for _ in range(bits_to_switch):
+            square = random.randint(0,4)
+            index = random.randint(0, len(distribution)-1)
+            distribution[square][index] = distribution[square][index] + random.uniform(-0.2,0.2)
+        return distribution
+    
+    def crossover(self, dist1, dist2):
         if random.random() < CROSSOVER_RATE:
             crossover_index = random.randint(0, len(dist1)-1)
             new_dist1 = dist1.copy()
@@ -135,7 +148,7 @@ class Evolution:
 
 class Algorithm:
     def __init__(self):
-        self.nGenerations = 40
+        self.nGenerations = GENERATIONS
         self.generation = Evolution()
         self.best_fitnesses = []
         self.best_init = []
@@ -158,7 +171,8 @@ class Algorithm:
     
     def initial_analysis(self):
         # Plot the initial weights of letters a-z for generation 0, 5, 10, 15, 19
-        indexes = [0, 3, 6, 9]
+        #indexes = [0, 19, 39, 59, 79, 99]
+        indexes = [0, 4, 9, 14, 19]
         fig, ax = plt.subplots(len(indexes), 1, figsize=(10, 8))
 
         for idx, generation_idx in enumerate(indexes):
@@ -208,7 +222,8 @@ class Algorithm:
 
     def informed_analysis(self, green, yellow, white, gray):
         # Plot the initial weights of letters a-z for generation 0, 5, 10, 15, 19
-        indexes = [0,3,6,9]
+        #indexes = [0, 19, 39, 59, 79, 99]
+        indexes = [0, 4, 9, 14, 19]
         fig, ax = plt.subplots(len(indexes), 1, figsize=(10, 8))
         
         distributions = []
@@ -250,8 +265,20 @@ yellow = np.zeros((POSITIONS, LETTERS))
 white  = np.ones((POSITIONS, LETTERS))
 gray   = np.zeros((POSITIONS, LETTERS))
 for i in range(POSITIONS):
-    white[i][0] = 0
-green[1][0] = 1
+    white[i][0] = 0 # a
+    white[i][4] = 0 # e
+    white[i][2] = 0 # c
+    white[i][1] = 0 # b
+    white[i][15] = 0 # p
+    gray[i][2] = 1  # c
+    gray[i][1] = 1  # b
+
+
+green[3][0] = 1
+green[1][4] = 1
+yellow[2][15] = 1
+# word is petal
+# e and a are guessed correctly and p wrong location, c and b also guessed but nothing
 alg.informed_analysis(green, yellow, white, gray)
 #env = Evolution()
 #fitness, guesses, distribution = env.run_generation()
