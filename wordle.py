@@ -5,12 +5,10 @@ POSITIONS = 5
 LETTERS = 26
 class Wordle: 
     def __init__(self):
-        self.green  = np.zeros((POSITIONS, LETTERS))
-        self.yellow = np.zeros((POSITIONS, LETTERS))
+        self.green  = np.full((POSITIONS, LETTERS), -1)
+        self.yellow = np.full((POSITIONS, LETTERS), -1)
         self.white  = np.ones((POSITIONS, LETTERS))
-        self.gray   = np.zeros((POSITIONS, LETTERS))
-        
-        
+        self.gray   = np.full((POSITIONS, LETTERS), -1)
 
         self.results = []
 
