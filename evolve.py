@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 POPULATION_SIZE = 100
 MUTATION_RATE = 0.5
-CROSSOVER_RATE = 0.2
+CROSSOVER_RATE = 0.3
 GENERATIONS = 20
 
 
@@ -17,7 +17,7 @@ LAYERS = 4    # white, grey, green, yellow
 class Individual:
     def __init__(self):
         self.initial = np.random.rand(POSITIONS, LETTERS) # random 26 x 5 matrix - for breeding purposes
-        self.weights = [[[[[random.uniform(-.5, .5) for _ in range(LETTERS)] for _ in range(POSITIONS)] for _ in range(LETTERS)] for _ in range(POSITIONS)] for _ in range(LAYERS)]
+        self.weights = [[[[[random.uniform(-1, 1) for _ in range(LETTERS)] for _ in range(POSITIONS)] for _ in range(LETTERS)] for _ in range(POSITIONS)] for _ in range(LAYERS)]
         self.weights = np.array(self.weights)
         #self.weights = np.random.rand(LAYERS, POSITIONS, LETTERS, POSITIONS, LETTERS) # random 26 x 5 x 26 x 5 matrix
         
@@ -91,10 +91,10 @@ class Evolution:
         return fitnesses, best_fitness, best_guesses, best_distribution, weights
     
     def mutate(self):
-        parents = sorted(self.population, key=lambda x: x.fitness, reverse=True)[:int(POPULATION_SIZE/8)]
+        parents = sorted(self.population, key=lambda x: x.fitness, reverse=True)[:int(POPULATION_SIZE/4)]
         
         children = []
-        for _ in range(4):
+        for _ in range(2):
             for p in parents:
                 kid1 = Individual()
                 kid2 = Individual()
@@ -122,9 +122,9 @@ class Evolution:
         bits_to_switch = int(len(distribution)*len(distribution[0]) * MUTATION_RATE)
 
         for _ in range(bits_to_switch):
-            square = random.randint(0,4)
-            index = random.randint(0, len(distribution)-1)
-            distribution[square][index] = max(0, min(1, distribution[square][index] + random.uniform(-0.2,0.2)))
+            square = random.randint(0,POSITIONS-1)
+            index = random.randint(0, LETTERS-1)
+            distribution[square][index] = max(0, min(1, distribution[square][index] + random.uniform(-1,1)))
         return distribution
     
     def add_variation_weights(self, distribution):
@@ -132,9 +132,9 @@ class Evolution:
         bits_to_switch = int(len(distribution)*len(distribution[0]) * MUTATION_RATE)
 
         for _ in range(bits_to_switch):
-            square = random.randint(0,4)
-            index = random.randint(0, len(distribution)-1)
-            distribution[square][index] = distribution[square][index] + random.uniform(-0.2,0.2)
+            square = random.randint(0,POSITIONS-1)
+            index = random.randint(0, LETTERS-1)
+            distribution[square][index] = distribution[square][index] + random.uniform(-1,1)
         return distribution
     
     def crossover(self, dist1, dist2):
