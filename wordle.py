@@ -5,14 +5,14 @@ POSITIONS = 5
 LETTERS = 26
 class Wordle: 
     def __init__(self):
-        self.green  = np.full((POSITIONS, LETTERS), -1)
-        self.yellow = np.full((POSITIONS, LETTERS), -1)
+        self.green  = np.zeros((POSITIONS, LETTERS))
+        self.yellow = np.zeros((POSITIONS, LETTERS))
         self.white  = np.ones((POSITIONS, LETTERS))
-        self.gray   = np.full((POSITIONS, LETTERS), -1)
+        self.gray   = np.zeros((POSITIONS, LETTERS))
 
         self.results = []
 
-        with open("wordlist.txt", "r") as f:
+        with open("sss.txt", "r") as f:
             self.words = f.read().splitlines()
         self.target = self.words[random.randrange(0, len(self.words))]
         #self.target = 'motor' # TODO: Remove after testing
