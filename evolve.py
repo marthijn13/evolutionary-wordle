@@ -5,9 +5,9 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 POPULATION_SIZE = 100
-MUTATION_RATE = 0.5
+MUTATION_RATE = 0.2
 CROSSOVER_RATE = 0.3
-GENERATIONS = 20
+GENERATIONS = 1000
 
 
 LETTERS = 26  # a - z
@@ -124,7 +124,7 @@ class Evolution:
         for _ in range(bits_to_switch):
             square = random.randint(0,POSITIONS-1)
             index = random.randint(0, LETTERS-1)
-            distribution[square][index] = max(0, min(1, distribution[square][index] + random.uniform(-1,1)))
+            distribution[square][index] = random.uniform(0,1)
         return distribution
     
     def add_variation_weights(self, distribution):
@@ -134,7 +134,7 @@ class Evolution:
         for _ in range(bits_to_switch):
             square = random.randint(0,POSITIONS-1)
             index = random.randint(0, LETTERS-1)
-            distribution[square][index] = distribution[square][index] + random.uniform(-1,1)
+            distribution[square][index] = random.uniform(-1,1)
         return distribution
     
     def crossover(self, dist1, dist2):
@@ -171,8 +171,8 @@ class Algorithm:
     
     def initial_analysis(self):
         # Plot the initial weights of letters a-z for generation 0, 5, 10, 15, 19
-        #indexes = [0, 19, 39, 59, 79, 99]
-        indexes = [0, 4, 9, 14, 19]
+        #indexes = [0, 4, 9, 14, 19]
+        indexes = [0, 99, 199, 299, 399, 499, 599, 699, 799, 899, 999]
         fig, ax = plt.subplots(len(indexes), 1, figsize=(10, 8))
 
         for idx, generation_idx in enumerate(indexes):
@@ -222,26 +222,24 @@ class Algorithm:
 
     def informed_analysis(self, green, yellow, white, gray):
         # Plot the initial weights of letters a-z for generation 0, 5, 10, 15, 19
-        #indexes = [0, 19, 39, 59, 79, 99]
-        indexes = [0, 4, 9, 14, 19]
+        #indexes = [0, 4, 9, 14, 19]
+        indexes = [0, 99, 199, 299, 399, 499, 599, 699, 799, 899, 999]
         fig, ax = plt.subplots(len(indexes), 1, figsize=(10, 8))
         
         distributions = []
-        for init in self.best_init:
-
+    
+        for idx in indexes:
             distribution = np.zeros((POSITIONS, LETTERS))
-
-            for idx in indexes:
-                for i in range(POSITIONS):
-                    for j in range(LETTERS):
-                        distribution[i][j] = max(0, min(1, init[i][j] 
-                                                        + np.sum(self.best_weights[idx][0][i][j].dot(green.T)) 
-                                                        + np.sum(self.best_weights[idx][1][i][j].dot(yellow.T))
-                                                        + np.sum(self.best_weights[idx][2][i][j].dot(white.T))
-                                                        + np.sum(self.best_weights[idx][3][i][j].dot(gray.T))))
-                distributions.append(distribution)
+            for i in range(POSITIONS):
+                for j in range(LETTERS):
+                    distribution[i][j] = max(0, min(1, self.best_init[idx][i][j] 
+                                                    + np.sum(self.best_weights[idx][0][i][j].dot(green.T)) 
+                                                    + np.sum(self.best_weights[idx][1][i][j].dot(yellow.T))
+                                                    + np.sum(self.best_weights[idx][2][i][j].dot(white.T))
+                                                    + np.sum(self.best_weights[idx][3][i][j].dot(gray.T))))
+            distributions.append(distribution)
         for idx, generation_idx in enumerate(indexes):
-            heatmap = ax[idx].imshow(distributions[generation_idx], cmap='viridis', aspect='auto')
+            heatmap = ax[idx].imshow(distributions[idx], cmap='viridis', aspect='auto')
             ax[idx].set_title(f'Generation {generation_idx}')
             ax[idx].set_xticks(np.arange(0, LETTERS, 1))
             ax[idx].set_yticks(np.arange(0, POSITIONS, 1))
@@ -269,16 +267,14 @@ for i in range(POSITIONS):
     white[i][4] = 0 # e
     white[i][2] = 0 # c
     white[i][1] = 0 # b
-    white[i][15] = 0 # p
     gray[i][2] = 1  # c
     gray[i][1] = 1  # b
 
 
 green[3][0] = 1
 green[1][4] = 1
-yellow[2][15] = 1
-# word is petal
-# e and a are guessed correctly and p wrong location, c and b also guessed but nothing
+# word is sedan for example
+# e and a are guessed correctly, c and b also guessed but nothing
 alg.informed_analysis(green, yellow, white, gray)
 #env = Evolution()
 #fitness, guesses, distribution = env.run_generation()
