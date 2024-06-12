@@ -12,10 +12,10 @@ class Wordle:
 
         self.results = []
 
-        with open("sss.txt", "r") as f:
-            self.words = f.read().splitlines()
-        self.target = self.words[random.randrange(0, len(self.words))]
-        #self.target = 'motor' # TODO: Remove after testing
+        #with open("wordlist.txt", "r") as f:
+        #    self.words = f.read().splitlines()
+        #self.target = self.words[random.randrange(0, len(self.words))]
+        self.target = 'motor' 
     
     def __str__(self):
         string = ""
@@ -50,9 +50,6 @@ class Wordle:
                 self.green[i][char2int(guess[i])] = 1
                 result.append(5)
             elif guess[i] in self.target:
-                # TODO: deze implementatie betekent dat de interne representatie naar de agent geel krijgt ongeacht de hoeveelste gele hij is. Dit is een
-                # hele handige denk ik - maar vult een stukje nodige redenatie in. Het betekent ook dat het aantal intern geel niet impliceert dat er meerdere 
-                #zijn als er later een groene gevonden wordt
                 self.yellow[i][char2int(guess[i])] = 1
                 count = self.target.count(guess[i])
                 if count >= occurrences[i]:
@@ -60,7 +57,7 @@ class Wordle:
                 else:
                     result.append(0)
             else:
-                self.gray[i][char2int(guess[i])] = 1 #TODO: implementation could be that we do this instantly for the entire grid but i would prefer not to to make it more 'human'
+                self.gray[i][char2int(guess[i])] = 1
                 result.append(0)
         self.results.append(result)
         return result, guess

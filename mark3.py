@@ -19,8 +19,7 @@ class Individual:
         self.initial = np.random.rand(POSITIONS, LETTERS) # random 26 x 5 matrix - for breeding purposes
         self.weights = [[[[[random.uniform(-1, 1) for _ in range(LETTERS)] for _ in range(POSITIONS)] for _ in range(LETTERS)] for _ in range(POSITIONS)] for _ in range(LAYERS)]
         self.weights = np.array(self.weights)
-        #self.weights = np.random.rand(LAYERS, POSITIONS, LETTERS, POSITIONS, LETTERS) # random 26 x 5 x 26 x 5 matrix
-        
+ 
         self.fitness = 0
         self.env = wordle.Wordle()
 
@@ -64,17 +63,14 @@ class Evolution:
         for p in self.population:
             prevGuessResults = []
             prevGuess = ''
-            for i in range(6):
+            for _ in range(6):
                 fitness, guess = p.env.guessWord(p.construct_guess(prevGuess, prevGuessResults))
                 prevGuessResults = fitness
                 prevGuess = guess
                 if np.sum(fitness) > 24:
-                    p.fitness = fitness * (6-i)
                     break
-            # TODO: change fitness after implementing guesses based on any information instead of random guessing
             p.fitness = fitness
 
-            
         best_fitness = 0
         fitnesses = []
         best_guesses = []
@@ -170,8 +166,7 @@ class Algorithm:
         print(f"best fitnesses {self.best_fitnesses}")
     
     def initial_analysis(self):
-        # Plot the initial weights of letters a-z for generation 0, 5, 10, 15, 19
-        #indexes = [0, 4, 9, 14, 19]
+        # Plot the initial weights of letters a-z for generations
         indexes = [0, 99, 199, 299, 399, 499, 599, 699, 799, 899, 999]
         fig, ax = plt.subplots(len(indexes), 1, figsize=(10, 8))
 
@@ -188,7 +183,6 @@ class Algorithm:
         plt.show()
     
     def plot_generations(self):
-        # Define your data - replace this with your own data
         generations = self.all_fitnesses
         num_individuals = len(generations[0])
 
@@ -221,8 +215,7 @@ class Algorithm:
         plt.show()
 
     def informed_analysis(self, green, yellow, white, gray):
-        # Plot the initial weights of letters a-z for generation 0, 5, 10, 15, 19
-        #indexes = [0, 4, 9, 14, 19]
+        # Plot the initial weights of letters a-z for generation
         indexes = [0, 99, 199, 299, 399, 499, 599, 699, 799, 899, 999]
         fig, ax = plt.subplots(len(indexes), 1, figsize=(10, 8))
         
@@ -276,8 +269,4 @@ green[1][4] = 1
 # word is sedan for example
 # e and a are guessed correctly, c and b also guessed but nothing
 alg.informed_analysis(green, yellow, white, gray)
-#env = Evolution()
-#fitness, guesses, distribution = env.run_generation()
-#print(guesses)
-#print(distribution)
 
